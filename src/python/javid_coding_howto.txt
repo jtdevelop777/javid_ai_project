@@ -1,0 +1,134 @@
+วิธีแก้ให้ "สะอาด" ตามหลักกัปตัน Jack
+เราจะเปลี่ยนเจ้าของ Folder ให้เป็น user01 ก่อน เพื่อให้เราทำงานได้อิสระโดยไม่ต้องพึ่ง sudo ครับ
+
+1. เคลียร์ของเก่า (ที่สร้างด้วย sudo) ออกก่อน:
+
+Bash
+sudo rm -rf venv
+2. เปลี่ยนสิทธิ์ความเป็นเจ้าของ Folder (สำคัญมาก):
+
+Bash
+sudo chown -R user01:user01 /mnt/javid_data/projects/setup_ai
+3. สร้าง venv ใหม่ด้วยสิทธิ์ user ปกติ:
+
+Bash
+python3 -m venv venv
+source venv/bin/activate
+ก้าวที่ 3: ลุย Backend (FastAPI + ZeroMQ)
+เมื่อ (venv) ขึ้นที่หน้าชื่อกัปตันแล้ว เรามาติดตั้ง "อาวุธ" สำหรับงาน Backend กันครับ:
+
+Bash
+pip install fastapi uvicorn pyzmq
+
+cd /mnt/javid_data/projects/setup_ai/
+python3 -m venv venv
+source venv/bin/activate
+pip install fastapi uvicorn pyzmq
+
+sudo apt  install docker.io      # version 28.2.2-0ubuntu1~24.04.1
+backend_api.py
+sudo usermod -aG docker $USER
+
+sudo apt  install rocminfo  # version 5.2.3-3
+1. เช็ค Driver บน Native ก่อน
+ลองใช้คำสั่งนี้เช็คดูว่าเครื่องมองเห็นการ์ด AMD และ Driver พร้อมไหม:
+
+Bash
+rocminfo
+# หรือ
+clinfo
+
+ดูจากรูปล่าสุด เครื่อง JaviaAI01 ยังขาดเครื่องมือหลักทั้ง Ollama และ Docker ผมขอไกด์ลำดับการลงแบบ "Step-by-Step" เพื่อให้รองรับ OpenGL/OpenCL และไม่ให้ Library ตีกันตามที่เราตกลงกันไว้นะครับ
+
+Step 0: เตรียมระบบให้พร้อม (Native)
+กัปตันรันชุดนี้ก่อนเพื่อให้เครื่องรู้จัก Hardware AMD และพร้อมรับ Docker ครับ
+
+Bash
+sudo apt update && sudo apt upgrade -y
+# ลงเครื่องมือพื้นฐานและ Driver Mesa (สำหรับ OpenGL/OpenCL)
+sudo apt install -y build-essential git mesa-utils clinfo
+Step 1: ติดตั้ง Docker (ห้องแล็บหลัก)
+เราต้องมี Docker ก่อนเพื่อใช้ทดสอบ C Code ตามกลยุทธ์ของกัปตันครับ
+
+Bash
+sudo apt install -y docker.io
+sudo systemctl enable --now docker
+# ให้ user01 ใช้งาน docker ได้โดยไม่ต้องใช้ sudo ทุกครั้ง
+sudo usermod -aG docker $USER
+(กัปตันอาจจะต้อง Logout แล้ว Login ใหม่เพื่อให้สิทธิ์ Group มีผลครับ)
+
+Step 2: ติดตั้ง Ollama (หัวใจ AI)
+ตัวนี้เราลง Native เพื่อรีดพลังสูงสุด แต่เราจะสั่งให้มันใช้ OpenCL แทน ROCm ถ้าเป็นไปได้ครับ
+
+Bash
+curl -fsSL https://ollama.com/install.sh | sh
+Step 3: เริ่มงาน Backend (FastAPI + ZeroMQ)
+ในเมื่อเราล้างเครื่องใหม่ เรามาสร้างโครงสร้าง Backend ที่กัปตันต้องการกันเลยครับ ผมแนะนำให้ทำใน Folder โปรเจกต์หลัก
+
+Bash
+cd /mnt/javid_data/projects/setup_ai/
+mkdir -p backend
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install fastapi uvicorn pyzmq
+เช็คลิสต์ Know-how จากกัปตัน:
+ทำไมต้องลงใหม่? เพราะป้องกัน Library เก่าๆ มาชนกับงานใหม่ โดยเฉพาะสาย AMD ที่เปราะบางเรื่อง Driver
+
+ทำไมต้อง Docker? เพื่อทดสอบ C Code ของระบบฐานข้อมูล AI (ข้อ 2) และสคริปต์ดูแลระบบ (ข้อ 4) โดยไม่ทำเครื่องหลักพัง
+
+กัปตันครับ พอลง Docker กับ Ollama เสร็จแล้ว ลองพิมพ์ docker --version กับ ollama --version เช็คดูหน่อยครับ ถ้าผ่านแล้ว ผมจะพาเขียน FastAPI + ZeroMQ ของจริง เพื่อเริ่ม Step 3 ทันที!
+
+กัปตันติดตรงไหนในขั้นตอน "ลงใหม่หมด" นี้ไหมครับ? ผมสแตนบายรอช่วยอยู่ครับ!
+
+
+วิธีแก้ให้ "สะอาด" ตามหลักกัปตัน Jack
+เราจะเปลี่ยนเจ้าของ Folder ให้เป็น user01 ก่อน เพื่อให้เราทำงานได้อิสระโดยไม่ต้องพึ่ง sudo ครับ
+
+1. เคลียร์ของเก่า (ที่สร้างด้วย sudo) ออกก่อน:
+
+Bash
+sudo rm -rf venv
+2. เปลี่ยนสิทธิ์ความเป็นเจ้าของ Folder (สำคัญมาก):
+
+Bash
+sudo chown -R user01:user01 /mnt/javid_data/projects/setup_ai
+3. สร้าง venv ใหม่ด้วยสิทธิ์ user ปกติ:
+
+Bash
+python3 -m venv venv
+source venv/bin/activate
+
+
+# 1. หยุด Service เดิมที่รันค้างไว้
+sudo systemctl stop ollama
+
+# 2. ตั้งค่าหลอกระบบ (เพื่อให้เห็น RX 470)
+export HSA_OVERRIDE_GFX_VERSION=8.0.3
+
+# 3. รัน Ollama ใหม่
+ollama serve
+
+
+htopkfjdkklากด่สา่่่กดกดเดกหก่่า่สkdfsklfjklsfdsf
+
+
+
+
+
+2. ถ้าจะใช้ Ollama ให้เห็น GPU (ต้องใช้ท่า Override)
+Ollama รุ่นใหม่ๆ พยายามเรียกใช้ ROCm ถ้ากัปตันอยากให้มันใช้ RX 470 ได้ ต้องสั่งคำสั่งนี้ก่อนรันครับ:
+
+Bash
+export HSA_OVERRIDE_GFX_VERSION=8.0.3
+ollama serve
+
+# 1. ปิดตัวที่รันค้างอยู่
+sudo systemctl stop ollama
+sudo pkill ollama
+
+# 2. ตั้งค่าหลอกระบบ (เพื่อให้เห็น Polaris/RX 470)
+export HSA_OVERRIDE_GFX_VERSION=8.0.3
+
+# 3. รันใหม่แบบโชว์ Log (Terminal นี้จะค้างไว้ ดูว่ามันโหลด GPU ไหม)
+ollama serve

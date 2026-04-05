@@ -1,0 +1,28 @@
+Step 1: Check & Init (เช็กความพร้อม)
+ถ้าโปรเจกต์นี้ยังไม่ได้เริ่ม Git หรืออยากเริ่มใหม่ให้สะอาด:
+
+Bash
+git init
+Step 2: สร้างแนวป้องกัน (.gitignore)
+เพื่อไม่ให้ไฟล์ขยะหรือไฟล์หนักๆ (พวก Model weights ที่ยังไม่นิ่ง) มาทำให้ Git เราอืด:
+
+Bash
+touch .gitignore
+(บอกผมได้นะว่าใช้ภาษาอะไรบ้าง เดี๋ยวผมร่างลิสต์ไฟล์ที่ควร Ignore ให้ครับ)
+
+Step 3: First Safe Point (บันทึกจุดแรก)
+พอเริ่มวางโครงสร้างไฟล์เสร็จปุ๊บ ให้ทำ "จุดเซฟ" ทันที:
+
+Bash
+git add .
+git commit -m "feat: initial project structure and restart safety"
+
+git remote add origin https://github.com/jakchaiti-prog/javid_ai_project.git
+
+Step 2: ผูกเชือกเชื่อมต่อ (Add Remote)
+สั่งให้ Git ในเครื่องรู้ว่าต้องส่งงานไปที่ URL ที่คุณส่งมาให้ผม:
+
+Bash
+git remote add origin https://github.com/jakchaiti-prog/javid_ai_project.git
+Step 3: บันทึกงานก้อนแรก (First Commit)
+สร้างไฟล์ README หรือเอาไฟล์ที่มีอยู่มาบันทึกไว้ก่อนครับ:
