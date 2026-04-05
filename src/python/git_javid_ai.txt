@@ -26,3 +26,21 @@ Bash
 git remote add origin https://github.com/jakchaiti-prog/javid_ai_project.git
 Step 3: บันทึกงานก้อนแรก (First Commit)
 สร้างไฟล์ README หรือเอาไฟล์ที่มีอยู่มาบันทึกไว้ก่อนครับ:
+
+  git config --global user.email "jakchai.ti@gmail.com"
+  git config --global user.name "jakchai"
+  no changes added to commit (use "git add" and/or "git commit -a")
+
+htop
+radeontop
+
+git user : jtdevelop777
+git pass : bvnEAay7
+git token : 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
+git remote set-url origin https://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@github.com/jakchaiti-prog/javid_ai_project.git
+
+
+export OLLAMA_VULKAN=1
+ollama serve
+เปิดหน้าใหม่มาสั่ง 
+ollama run llama3
