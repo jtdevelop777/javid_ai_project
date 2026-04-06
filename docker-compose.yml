@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+  # ระบบฐานข้อมูล Vector
+  chromadb:
+    image: chromadb/chroma
+    container_name: javid_db
+    volumes:
+      - ./data/db:/chroma/chroma
+    ports:
+      - "8000:8000"
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    restart: always
+
+  # (อนาคต) เราสามารถเพิ่ม AI Worker ที่นี่ได้ถ้าจะทำเป็น Docker
