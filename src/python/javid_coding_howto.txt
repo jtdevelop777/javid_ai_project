@@ -100,27 +100,13 @@ python3 -m venv venv
 source venv/bin/activate
 
 
-# 1. หยุด Service เดิมที่รันค้างไว้
-sudo systemctl stop ollama
-
-# 2. ตั้งค่าหลอกระบบ (เพื่อให้เห็น RX 470)
-export HSA_OVERRIDE_GFX_VERSION=8.0.3
-
-# 3. รัน Ollama ใหม่
-ollama serve
-
-
-htopkfjdkklากด่สา่่่กดกดเดกหก่่า่สkdfsklfjklsfdsf
-
-
-
-
 
 2. ถ้าจะใช้ Ollama ให้เห็น GPU (ต้องใช้ท่า Override)
 Ollama รุ่นใหม่ๆ พยายามเรียกใช้ ROCm ถ้ากัปตันอยากให้มันใช้ RX 470 ได้ ต้องสั่งคำสั่งนี้ก่อนรันครับ:
 
 Bash
 export HSA_OVERRIDE_GFX_VERSION=8.0.3
+export OLLAMA_VULKAN=1
 ollama serve
 
 # 1. ปิดตัวที่รันค้างอยู่
@@ -132,3 +118,26 @@ export HSA_OVERRIDE_GFX_VERSION=8.0.3
 
 # 3. รันใหม่แบบโชว์ Log (Terminal นี้จะค้างไว้ ดูว่ามันโหลด GPU ไหม)
 ollama serve
+
+
+ollama pull llama3
+ollama run llama3
+
+ollama run deepseek
+ollama run qwen2:7b //ภาษาไทย
+
+
+# จำกัด CPU ให้เหลือแค่ 25% (เน้นใช้ GPU ทำงานหลัก)
+systemd-run --scope -p CPUQuota=25% ollama run phi3
+
+text-to-speedch
+https://medium.com/@vndee.huynh/build-your-own-voice-assistant-and-run-it-locally-whisper-ollama-bark-c80e6f815cba
+https://github.com/openai/whisper
+https://pub.towardsai.net/speech-to-sql-using-openais-whisper-and-ollama-llama3-0429675c7d68
+
+openclow
+========
+https://gemini.google.com/app/31b04d5a362ae1eb?utm_source=app_launcher&utm_medium=owned&utm_campaign=base_all
+https://ollama.com/blog/openclaw
+
+http://127.0.0.1:18789/dashboard?token=Jakchai1234
