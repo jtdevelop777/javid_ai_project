@@ -1,0 +1,17 @@
+#docker build -t javid-ollama-amd -f Dockerfile.javid .
+#docker run -d --device /dev/dri --name javid-ai -p 11434:11434 javid-ollama-amd
+FROM ubuntu:22.04
+
+# เพิ่ม curl เข้าไปในบรรทัดนี้ครับ
+RUN apt-get update && apt-get install -y \
+    curl \
+    mesa-opencl-icd \
+    clinfo \
+    libomp-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# ตอนนี้จะเรียกใช้ curl ได้แล้ว
+RUN curl -L https://ollama.com/download/ollama-linux-amd64 -o /usr/bin/ollama && \
+    chmod +x /usr/bin/ollama
+
+ENTRYPOINT ["ollama", "serve"]
