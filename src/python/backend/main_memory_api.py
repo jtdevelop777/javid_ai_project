@@ -17,14 +17,21 @@ app = FastAPI(title="Javid AI Memory Core", version="2.0.0")
 # =========================
 # ZeroMQ (Event Bus)
 # =========================
+# แก้ไขส่วนการประกาศ Socket ให้เป็น Async เต็มตัว
 ctx = zmq.asyncio.Context()
 zmq_sock = ctx.socket(zmq.PUB)
-zmq_sock.bind("tcp://0.0.0.0:5555")
+# ไม่ต้อง bind ซ้ำถ้ามีการรันใหม่บ่อยๆ หรือใช้ Try-Except คลุมไว้ครับ
+try:
+    zmq_sock.bind("tcp://0.0.0.0:5555")
+except zmq.ZMQError:
+    pass
 
 # =========================
 # Chroma (AI Memory)
 # =========================
-chroma_client = chromadb.HttpClient(host="localhost", port=8000)
+# chroma_client = chromadb.HttpClient(host="localhost", port=8000)
+# จากเดิม 8000 เปลี่ยนเป็น 8002
+chroma_client = chromadb.HttpClient(host="localhost", port=8002)
 
 collection = chroma_client.get_or_create_collection(
     name="javid_semantic_memory"
@@ -114,19 +121,17 @@ async def save_memory(entry: KnowledgeEntry):
 # =========================
 # 2. SEARCH MEMORY
 # =========================
+# เพิ่มตัวเลือกการกรองข้อมูลใน Search
 @app.post("/api/v1/memory/search")
 async def search_memory(query: SearchQuery):
     try:
         results = collection.query(
             query_texts=[query.query],
-            n_results=query.top_k
+            n_results=query.top_k,
+            # เพิ่ม include เพื่อเอา metadata และ distance มาวิเคราะห์ความแม่นยำ
+            include=["documents", "metadatas", "distances"] 
         )
-
-        return {
-            "status": "success",
-            "results": results
-        }
-
+        return {"status": "success", "results": results}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -191,3 +196,5 @@ async def health():
             "zmq": "ok"
         }
     }
+
+## bash uvicorn main_memory_api:app --reload --port 8001
