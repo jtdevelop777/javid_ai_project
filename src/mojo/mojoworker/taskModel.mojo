@@ -5,6 +5,7 @@ struct TaskModel:
     var command: String
     var status: String
     var response: String
+    var attachment_path: String # <--- เพิ่มไว้เก็บที่อยู่รูปภาพในเครื่อง
     var progress: Int
     var estimated_sec: Float64
 
@@ -18,6 +19,7 @@ struct TaskModel:
             self.command = cmd
             self.status = "PENDING"
             self.response = "-"
+            self.attachment_path = "-"
             self.progress = 0
             
             # --- เปลี่ยนจาก len(cmd) เป็น cmd.byte_length() ---
@@ -26,7 +28,8 @@ struct TaskModel:
     def to_json(self, msg_type: String) -> String:
             var c = self.command.replace('"', '\\"').replace('\n', '\\n')
             var r = self.response.replace('"', '\\"').replace('\n', '\\n')
-            
+            var a = self.attachment_path.replace('"', '\\"').replace('\\', '\\\\')
+
             # --- จุดตายอยู่ตรงนี้ครับ ---
             # สร้างตัวแปรไว้เก็บค่าที่จะส่งใน "value"
             var val_to_send: String
@@ -43,6 +46,6 @@ struct TaskModel:
                 '", "progress": ' + String(self.progress) + 
                 ', "value": "' + val_to_send + '"' + # ใส่ฟันหนูครอบ value ไว้ด้วยเพราะเป็น String
                 ', "command": "' + c + 
-                '", "response": "' + r + '"}'  
+                '", "response": "' + r + '", "attachment_path": "' + a + '"}'  
 
              
