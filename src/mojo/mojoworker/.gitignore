@@ -1,0 +1,18 @@
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
+
+# Ignore Mojo temporary files
+.mojo/
+build/
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore Javid Database (Know-how ของเราเก็บไว้ในเครื่องปลอดภัยกว่า)
+javid_memory.db
+
+# Ignore Environment files
+.env

@@ -26,3 +26,17 @@ Bash
 git remote add origin https://github.com/jakchaiti-prog/javid_ai_project.git
 Step 3: บันทึกงานก้อนแรก (First Commit)
 สร้างไฟล์ README หรือเอาไฟล์ที่มีอยู่มาบันทึกไว้ก่อนครับ:
+
+
+# 1. ยืนยันการแก้ Conflict
+git add README.md
+
+# 2. เก็บตกไฟล์ API และโค้ดที่เราเขียนเพิ่ม (จากรูปที่แล้ว)
+git add src/python/backend/main_memory_api.py
+git add src/python/backend/requirements.txt
+
+# 3. Commit ปิดงาน
+git commit -m "fix: merge readme and add memory api core [ai_tag : 14042026_1055]"
+
+# 4. Push ขึ้น GitHub
+git push origin main

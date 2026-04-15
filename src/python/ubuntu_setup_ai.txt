@@ -1,0 +1,100 @@
+ติดปัญหานิดหน่อยที่ Mirror (เซิร์ฟเวอร์เก็บไฟล์) ในไทยครับจักร์ชัย! ดูเหมือน mirrors.cloudforest.co.th จะไม่ตอบสนอง (Connection timed out) ทำให้เราโหลด lm-sensors ไม่ผ่าน
+
+ไม่ต้องตกใจครับ นี่คือเรื่องปกติของ Linux เราแก้ได้ง่ายๆ ด้วยการเปลี่ยนไปใช้ Mirror มาตรฐานของ Ubuntu หรือตัวที่เสถียรกว่าครับ
+
+🛠️ วิธีแก้ไข (Step-by-Step)
+1. ลอง Update ล้างท่อดูก่อน:
+บางทีแค่การ Update ใหม่เพื่อให้มันไปหา Route อื่นอาจจะช่วยได้
+
+Bash
+sudo apt update --fix-missing
+2. เปลี่ยน Mirror (ถ้าข้อ 1 ยังไม่ได้):
+ถ้ามันยังพยายามจะไปที่ cloudforest แล้วค้าง ให้เราเปลี่ยนไปใช้ Mirror หลักครับ:
+
+เปิดไฟล์ sources.list:
+
+Bash
+sudo nano /etc/apt/sources.list
+มองหาบรรทัดที่มีคำว่า mirrors.cloudforest.co.th แล้วเปลี่ยนเป็น archive.ubuntu.com หรือ mirror1.ku.ac.th (ของ ม.เกษตร เสถียรมากครับ)
+
+กด Ctrl+O เพื่อ Save และ Ctrl+X เพื่อออก
+
+3. ติดตั้งอีกครั้ง:
+
+Bash
+sudo apt update
+sudo apt install lm-sensors
+
+psensor
+psensor
+
+💡 ทำไมต้องมี lm-sensors?
+ตัวนี้สำคัญมากสำหรับโปรเจกต์เราครับ เพราะมันจะทำให้ Python ของจักร์ชัยสามารถ อ่านค่าความร้อน (Temp) และ ความเร็วพัดลม ของเครื่องได้จริงๆ ไม่ต้องใช้ค่าจำลอง (Mock data)
+
+หลังจากลงเสร็จแล้ว อย่าลืมรันคำสั่งนี้เพื่อเซตอัพนะครับ:
+
+Bash
+sudo sensors-detect
+(กด Enter รัวๆ ตอบ Yes ให้หมดครับ) พอเสร็จแล้วลองพิมพ์ sensors ดูครับ จักร์ชัยจะเห็นความร้อนของ CPU และอาจจะเห็นของ RX470 ด้วย!
+/etc/init.d/kmod start
+
+export HSA_OVERRIDE_GFX_VERSION=8.0.3
+export OLLAMA_VULKAN=1
+ollama serv
+เปิดหน้าใหม่มาสั่ง 
+ollama run llama3
+
+เราต้องสร้างไฟล์ Source List พื้นฐานกลับมา เพื่อให้ระบบรู้ทางไปดาวน์โหลดครับ
+
+ขั้นตอนการแก้ปัญหา (Step-by-Step)
+1. สร้างไฟล์แหล่งเก็บซอฟต์แวร์ใหม่
+เราจะสร้างไฟล์ ubuntu.sources ให้มีเนื้อหาที่ถูกต้อง (สำหรับ Ubuntu Noble 24.04 หรือเวอร์ชันที่คุณใช้อยู่) โดยใช้คำสั่งนี้ครับ:
+
+Bash
+sudo nano /etc/apt/sources.list.d/ubuntu.sources
+จากนั้น คัดลอกข้อความด้านล่างนี้ไปวาง (ถ้าใช้ Terminal ใน Ubuntu ให้กด Ctrl+Shift+V เพื่อวาง):
+
+Plaintext
+Types: deb
+URIs: http://archive.ubuntu.com/ubuntu/
+Suites: noble noble-updates noble-backports
+Components: main universe restricted multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+
+Types: deb
+URIs: http://security.ubuntu.com/ubuntu/
+Suites: noble-security
+Components: main universe restricted multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+(หมายเหตุ: ถ้าคุณไม่ได้ใช้เวอร์ชัน 24.04 (Noble) ให้เปลี่ยนคำว่า noble เป็นชื่อเวอร์ชันของคุณ เช่น jammy สำหรับ 22.04)
+
+
+เนื่องจากกัปตันรันบน Linux สิ่งสำคัญคือต้องติดตั้ง Thai Fonts แพ็คเกจ ลงในระบบปฏิบัติการด้วยนะครับ เพื่อให้ Library ต่างๆ เรียกใช้ฟอนต์ไทยมาแสดงผลได้:
+คำสั่งติดตั้งฟอนต์ไทย: sudo apt install fonts-thai-tlwg
+
+ถ้ากัปตันต้องการพิมพ์งานออฟไลน์: ใน Linux ผมแนะนำ LibreOffice หรือ OnlyOffice (ตัวนี้เมนูเหมือน MS Word มาก) ซึ่งลงผ่าน Snap ได้ชัวร์ครับ:
+sudo mkdir -p /usr/share/fonts/truetype/thai
+sudo cp /home/user01/Downloads/THSarabunNew/*.ttf /usr/share/fonts/truetype/thai/
+
+1. ติดตั้ง LibreOffice (มาตรฐานของสาย Linux)
+LibreOffice เป็นชุดออฟฟิศที่ได้รับความนิยมสูงสุดใน Linux และรองรับการทำงานกับ Python ได้ดีมากครับ กัปตันสามารถติดตั้งผ่าน Terminal ได้เลยแม้ไม่มีเน็ต (ถ้ากัปตันโหลดไฟล์ .deb หรือ .rpm เตรียมไว้ล่วงหน้า):
+
+คำสั่งติดตั้ง (ถ้ามีเน็ตชั่วคราว): sudo apt install libreoffice
+
+การทดสอบกับ Python: กัปตันสามารถใช้ Library อย่าง python-docx (สำหรับไฟล์ .doc) หรือ pandas / openpyxl (สำหรับไฟล์ .xlsx) สร้างไฟล์ขึ้นมา แล้วใช้ LibreOffice เปิดเช็คความเนียนของฟอร์แมตได้ทันทีครับ
+
+2. ติดตั้ง OnlyOffice (แนะนำถ้าต้องการความเหมือน MS Word 100%)
+ถ้ากัปตันต้องการให้หน้าตาเมนูและ Layout เหมือน Microsoft Office มากที่สุด เพื่อเอาไปส่งต่อให้หน่วยงานอื่น ผมแนะนำ OnlyOffice Desktop Editors ครับ:
+
+ข้อดี: มันทำงานแบบ Offline ได้สมบูรณ์ และจัดการไฟล์ตระกูล .docx, .xlsx, .pptx ได้แม่นยำมาก
+
+คำสั่งติดตั้ง: sudo snap install onlyoffice-desktopeditors (หรือโหลดไฟล์ติดตั้งแบบ Offline มาลงครับ)
+
+
+MMX-CLI
+========
+https://pandaily.com/mini-max-launches-mmx-cli-for-ai-agent-automation
+https://github.com/MiniMax-AI/cli
+
+user01@JaviaAI01:~$ mmx --version
+mmx 1.0.7

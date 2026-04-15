@@ -1,0 +1,17 @@
+https://docs.portainer.io/start/install-ce/server/docker/linux
+docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:sts
+https://docs.portainer.io/start/install-ce/server/swarm/linux
+
+docker restart portainer
+https://localhost:9443
+useer : admin
+passwd : gKIEv624M3wE
+
+
+./run_deerflow.sh
+http://127.0.0.1:18880
+useer : admin
+passwd : gKIEv624M3wE#
+
+
+http://127.0.0.1:18789/dashboard?token=Jakchai1234

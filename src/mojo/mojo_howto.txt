@@ -1,0 +1,62 @@
+curl -fsSL https://pixi.sh/install.sh | sh
+
+/home/user01/.pixi/bin/pixi
+
+
+If you don't have it, install pixi:
+
+curl -fsSL https://pixi.sh/install.sh | sh
+
+Navigate to the directory where you want to create a project and run this:
+
+pixi init hello-world \
+  -c https://conda.modular.com/max-nightly/ -c conda-forge \
+  && cd hello-world
+
+This creates a project directory named hello-world, adds the channel for Modular conda packages, and enters the directory.
+
+Tip: You can remove the -c options if you specify default channels.
+
+Install Mojo (nightly):
+
+pixi add mojo
+
+Enter the virtual environment so you can access the mojo CLI:
+
+pixi shell
+
+Verify your installation by printing the Mojo version:
+
+mojo --version
+
+pixi project channel add https://conda.modular.com/max-nightly/
+
+ถ้ายังไม่ได้ ให้ใช้วิธี "ทางลัด" (Force Add)
+หากคำสั่งข้างบนยังขัดใจกัปตัน ให้ลองรันตัวนี้ตัวเดียวจบครับ:
+
+Bash
+pixi add -c https://conda.modular.com/max-nightly/ -c conda-forge mojo
+คำสั่งนี้คือการบอก pixi ว่า "ไปดึง mojo มาจากลิ้งก์นี้นะ แล้วใช้ conda-forge ช่วยหา library อื่นๆ ที่เกี่ยวข้องด้วย"
+
+pixi add pyzmq
+
+pixi init .
+pixi shell
+exit
+
+https://github.com/modular/mojo-gpu-puzzles/tree/main
+https://github.com/modular
+https://puzzles.modular.com/
+
+https://builds.modular.com/
+https://github.com/modular
+
+mojo pdf
+https://github.com/zoffixznet/Mojo-PDF
+
+
+https://forum.modular.com/u/jakchai/messages
+u: jakchai
+p: gKIEv624M3wE
+
+https://docs.mojolicious.org/Mojolicious/Guides/Tutorial#Hello-World
