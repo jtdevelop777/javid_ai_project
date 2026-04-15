@@ -27,7 +27,8 @@ def main() raises:
         print("📩 [PULL]: กัปตันสั่งมาว่า:", message)
 
         # 1. ประเมินเวลาและส่งออกทาง PUB (8002) ทันที
-        var est_wait = 1.5 + (Float64(message.byte_length()) / 50.0)
+        # var est_wait = 1.5 + (Float64(message.byte_length()) / 50.0)
+        var est_wait = 5.0 + (Float64(message.byte_length()) / 10.0) # ปรับตัวหารให้เล็กลงเพื่อให้เวลาเพิ่มขึ้น
         publisher.send_string('{"type": "estimation", "value": ' + String(est_wait) + '}')
         print("⏳ [PUB]: ส่งเวลาประเมิน ->", est_wait, "วินาที")
 
@@ -48,8 +49,12 @@ def main() raises:
             ai_reply = String("ขออภัยครับกัปตัน ติดต่อ Ollama ไม่ได้")
 
         # 3. ส่งคำตอบจริงออกทาง PUB (8002)
-        publisher.send_string('{"type": "answer", "value": "' + ai_reply + '"}')
-        print("✨ [PUB]: ส่งคำตอบสำเร็จ")
+        # --- ใน server.mojo ช่วงที่ได้ ai_reply มาแล้ว ---
+        var ai_reply_safe = ai_reply.replace('"', '\\"').replace('\n', '\\n').replace('\r', '\\r')
+
+        # แล้วค่อยส่งออกไป
+        publisher.send_string('{"type": "answer", "value": "' + ai_reply_safe + '"}')
+        print("✨ [PUB]: ส่งคำตอบสำเร็จ")        
 
         # 4. บันทึก DB
         save_to_db(message, ai_reply)
