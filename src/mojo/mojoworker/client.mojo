@@ -30,18 +30,26 @@ def main() raises:
     
     while True:
         # เช็ค Message จากพอร์ต 8002 (รอรอบละ 100ms)
-        var socks = poller.poll(100)
-        
-        if socks: 
-            var msg = subscriber.recv_string(flags=zmq.NOBLOCK)
-            var data = json.loads(msg)
+        try:
+            # เช็ค Message จากพอร์ต 8002 (รอรอบละ 100ms)
+            var socks = poller.poll(100)
             
-            if data["type"] == "estimation":
-                print("⏳ [MQ Status]: ระบบได้รับงานแล้ว คาดว่าใช้เวลา", data["value"], "วินาที")
-            #elif data["type"] == "answer":
-            #    print("✨ [MQ Answer]: AI ตอบกลับมาว่า ->", data["value"])
-            #    print("\n--- จบภารกิจ (กด Ctrl+C เพื่อออก) ---")
-            elif data["type"] == "answer":
-                print("✨ [MQ Answer]: AI ตอบกลับมาว่า ->", data["value"])
-                print("\n--- ภารกิจเสร็จสิ้น ---")
-                return # ใส่ return ตรงนี้เพื่อให้ออกจาก while loop และจบโปรแกรมครับ                
+            if socks:     
+                # 1. ลองดึงข้อความแบบไม่รอ (NOBLOCK)
+                var msg = subscriber.recv_string(flags=zmq.NOBLOCK)
+                
+                # 2. ถ้ามีข้อความเข้ามา ก็ Parse JSON (เรียกใช้ Python json.loads)
+                var data = json.loads(msg)
+                
+                if data["type"] == "estimation":
+                    print("⏳ [MQ Status]: ระบบรับงานแล้ว คาดว่าใช้เวลา " + String(data["value"]) + " วินาที")
+                elif data["type"] == "answer":
+                    print("✨ [MQ Answer]: AI ตอบมาว่า -> " + String(data["value"]))
+                    print("\n--- ภารกิจเสร็จสิ้น ---")
+                    return # ใส่ return ตรงนี้เพื่อให้ออกจาก while loop และจบโปรแกรมครับ  
+
+        except:
+            # 3. ถ้าไม่มีข้อความ (NOBLOCK จะโดดมาที่นี่) ให้ข้ามไปทำอย่างอื่น
+            pass
+
+                      
