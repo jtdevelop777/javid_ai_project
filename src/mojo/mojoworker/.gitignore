@@ -16,3 +16,7 @@ javid_memory.db
 
 # Ignore Environment files
 .env
+javid_memory.db
+*.bin
+.pixi/
+.mojo_cache/

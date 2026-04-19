@@ -57,7 +57,9 @@ def ask_ollama(prompt: String) -> String:
         var requests = Python.import_module("requests")
         var url = "http://localhost:11434/api/generate"
         var payload = Python.dict()
-        payload["model"] = "llama3"
+        # payload["model"] = "llama3"
+        # payload["model"] = "qwen2"
+        payload["model"] = "dimavz/whisper-tiny"
         payload["prompt"] = prompt
         payload["stream"] = False
         

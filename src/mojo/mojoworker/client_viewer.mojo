@@ -21,25 +21,26 @@ def main() raises:
     print("📡 Connected to: tcp://localhost:8002")
     print("----------------------------------------")
 
-    try:
-        while True:
-            # รอรับข้อมูล (Blocking call)
-            var raw_msg = subscriber.recv_string()
-            var data = json.loads(raw_msg)
-            
-            # 2. ดึงข้อมูลออกมาแสดงผล
-            # หมายเหตุ: ใช้ py.str() เพื่อความชัวร์ในการดึงค่าจาก Python dict ใน Mojo
-            var task_id = py.str(data["id"])
-            var cmd = py.str(data["command"])
-            var resp = py.str(data["response"])
-            var status = py.str(data["status"])
+    while True:
+            try:
+                # รอรับข้อมูล
+                var raw_msg = subscriber.recv_string()
+                var data = json.loads(raw_msg)
+                
+                # ตรวจสอบก่อนว่ามี Key ครบไหม (กันเหนียว)
+                # หรือใช้ try ครอบเฉพาะตอนดึงค่า
+                var est_time = py.str(data["estimate"])
+                var task_id = py.str(data["id"])
+                var cmd = py.str(data["command"])
+                var resp = py.str(data["response"])
+                var status = py.str(data["status"])
 
-            print("\n📩 [ได้รับข้อมูลใหม่]")
-            print("🆔 ID      : " + String(task_id))
-            print("💬 คำสั่ง   : " + String(cmd))
-            print("✅ ผลลัพธ์ : " + String(resp))
-            print("📊 สถานะ   : " + String(status))
-            print("----------------------------------------")
-            
-    except:
-        print("\n🛑 ปิดระบบ Monitor")
+                print("\n📩 [ได้รับข้อมูลใหม่]")
+                print("🆔 ID      : " + String(task_id))
+                # ... (print ส่วนที่เหลือ) ...
+
+            except e:
+                # ถ้าเกิด Error ใน loop ให้แจ้งเตือนแต่ไม่ต้องหยุดรัน
+                print(e)
+                print("⚠️ ข้อมูลที่ได้รับมีรูปแบบไม่ถูกต้อง หรือรอรับข้อมูลนานเกินไป")
+                # ไม่ต้องใส่ break; เพื่อให้มันวนกลับไปรอ recv_string ใหม่
