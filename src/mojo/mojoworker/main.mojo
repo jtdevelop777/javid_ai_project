@@ -7,10 +7,6 @@ def main() raises:
     var py = Python.import_module("builtins")
     var sys = Python.import_module("sys")
     
-    # --- จูงมือ Mojo ไปหา Library ใน Pixi Environment ---
-    # เราใช้ path จาก which python ที่คุณส่งมา แล้วชี้ไปที่ site-packages
-    # sys.path.append("/mnt/javid_data/projects/javid_ai/src/mojo/mojoworker/.pixi/envs/default/lib/python3.12/site-packages")
-    
     # ทดสอบ import
     try:
         var fastapi = Python.import_module("fastapi")
@@ -22,45 +18,58 @@ def main() raises:
     var zmq = Python.import_module("zmq")
     var threading = Python.import_module("threading")
     
-    # --- ใช้ bridge_code ท่าเดิม (Single File) ---
+    # --- ใช้ bridge_code ฉบับปรับปรุง UTF-8 Encoding สมบูรณ์ ---
     var bridge_code = """
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 import uvicorn
 import zmq
-from fastapi import WebSocket
+import json
+from pydantic import BaseModel
+from typing import Dict, Any
 
-app = FastAPI()
+app = FastAPI(title="Javid MQ System API", version="1.0.0")
+
+# --- นิยาม Schema เพื่อแก้ปัญหาหน้า Swagger UI ว่างเปล่า ---
+class TaskSchema(BaseModel):
+    command: str
+
+class IngestSchema(BaseModel):
+    action: str
+    payload: Dict[str, Any]
 
 @app.post("/task")
-def submit_task(data: dict):
+def submit_task(data: TaskSchema):
     context = zmq.Context()
     sender = context.socket(zmq.PUSH)
     sender.connect("tcp://localhost:5555")
-    sender.send_string(data.get("command", ""))
+    
+    # แก้ไข: บังคับ ensure_ascii=False เพื่อให้ภาษาไทยคงสภาพ UTF-8 ไม่กลายเป็นรหัสต่างดาว
+    msg_dict = {"command": data.command}
+    sender.send_string(json.dumps(msg_dict, ensure_ascii=False))
     return {"status": "Success"}
 
-
-# เลนด่วน (Bypass - ยิงเข้า ZMQ 5556 หรือส่ง JSON ทั้งก้อน)
 @app.post("/ingest")
-def direct_ingest(data: dict):
+def direct_ingest(data: IngestSchema):
     context = zmq.Context()
     sender = context.socket(zmq.PUSH)
-    sender.connect("tcp://localhost:5555") # หรือจะแยก Port เป็น 5556 ก็ได้ถ้าอยากแยกเลนจริงจัง
+    sender.connect("tcp://localhost:5555")
     
-    # ส่งข้อมูลดิบเป็น String JSON กลับไปให้ Mojo Worker เป็นคนบันทึก DB
-    import json
-    sender.send_string(f"BYPASS_LOG:{json.dumps(data)}")
-    
+    msg_dict = {
+        "action": data.action,
+        "payload": data.payload
+    }
+    # แก้ไข: บังคับ ensure_ascii=False ป้องกันภาษาไทยเพี้ยนในเลนด่วน
+    sender.send_string(f"BYPASS_LOG:{json.dumps(msg_dict, ensure_ascii=False)}")
     return {"status": "Accepted", "mode": "FastTrack"}   
 
 @app.websocket("/ws/sdr")
 async def sdr_stream(websocket: WebSocket):
     await websocket.accept()
     while True:
-        # รับข้อมูล Binary จาก Mojo (SDR Stream)
         data = await websocket.receive_bytes() 
-        # ส่งต่อให้ระบบประมวลผล หรือบันทึกลงไฟล์ด่วน
-        save_sdr_chunk(data)     
+        # ฟังก์ชันรองรับการเซฟ chunk ข้อมูล SDR
+        # save_sdr_chunk(data)     
+        pass
 
 def start_api(port):
     uvicorn.run(app, host="0.0.0.0", port=port)
@@ -97,7 +106,7 @@ def start_api(port):
         print("⏳ Task Received: " + task.command)
 
         if "พักผ่อน" in task.command:
-            task.response = "สรุปงาน: ระบบรวมร่าง Mojo+FastAPI ผ่าน Pixi สำเร็จ [ai_tag: 15042026_0045]"
+            task.response = "สรุปงาน: แก้ไขปัญหาภาษาไทยต่างดาว (Encoding) ในระบบคิว Mojo+FastAPI ผ่าน ZMQ สำเร็จ [ai_tag: 13072026_0001]"
             database.log_to_sqlite(task.command, "COMPLETED", task.response)
             publisher.send_string(task.to_json("answer"))
             print("💤 พักผ่อนได้ครับกัปตัน!")
@@ -107,4 +116,3 @@ def start_api(port):
             database.log_to_sqlite(task.command, "COMPLETED", task.response)
             publisher.send_string(task.to_json("answer"))
             print("✨ งานเรียบร้อย")
-
