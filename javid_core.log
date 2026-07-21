@@ -1,0 +1,87 @@
+2026-07-18 22:30:27,876 [INFO] ✅ Status updated to DB.
+2026-07-18 22:40:35,211 [INFO] ✅ Status updated to DB.
+2026-07-18 23:11:48,325 [INFO] ✅ Status updated to DB.
+2026-07-18 23:15:33,256 [ERROR] <sqlite3.Cursor object at 0x7826a02297c0>
+2026-07-18 23:15:33,257 [INFO] ✅ Status updated to DB.
+2026-07-18 23:26:51,310 [INFO] <sqlite3.Connection object at 0x7125096a58a0>
+2026-07-18 23:26:57,195 [INFO] <sqlite3.Cursor object at 0x7124ff33d940>
+2026-07-18 23:26:57,196 [INFO] ✅ Status updated to DB.
+2026-07-18 23:34:10,794 [INFO] <sqlite3.Connection object at 0x7883ea4498a0>
+2026-07-18 23:34:15,642 [INFO] <sqlite3.Cursor object at 0x7883e80d1940>
+2026-07-18 23:34:15,642 [INFO] ✅ Status updated to DB.
+2026-07-18 23:35:49,760 [INFO] db_conn:<sqlite3.Connection object at 0x785bada098a0>
+2026-07-18 23:35:54,004 [INFO] <sqlite3.Cursor object at 0x785ba4329a40>
+2026-07-18 23:35:54,005 [INFO] ✅ Status updated to DB.
+2026-07-18 23:39:35,403 [INFO] db_conn:<sqlite3.Connection object at 0x7321059558a0>
+2026-07-18 23:40:27,340 [INFO] 📊 Data in row: None
+2026-07-18 23:40:27,340 [INFO] ✅ Status updated to DB.
+2026-07-18 23:59:31,889 [INFO] db_conn:<sqlite3.Connection object at 0x7d57593c58a0>
+2026-07-18 23:59:50,696 [INFO] 📊 Data in row: None
+2026-07-18 23:59:50,696 [INFO] ✅ Status updated to DB.
+2026-07-19 00:03:26,945 [INFO] db_conn:<sqlite3.Connection object at 0x7d6f604498a0>
+2026-07-19 00:03:42,730 [INFO] 📊 SQL Update Result -> Affected Rows: 0
+2026-07-19 00:03:42,730 [INFO] ✅ Status updated to DB.
+2026-07-19 00:29:12,772 [INFO] db_conn:<sqlite3.Connection object at 0x7155ce9658a0>
+2026-07-19 00:35:56,729 [INFO] db_conn:<sqlite3.Connection object at 0x761c8e03d8a0>
+2026-07-19 00:36:55,611 [INFO] db_conn:<sqlite3.Connection object at 0x71566cdd98a0>
+2026-07-19 00:37:03,128 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-19 00:37:03,128 [INFO] ✅ Status updated to DB.
+2026-07-19 01:48:54,309 [INFO] db_conn:<sqlite3.Connection object at 0x70bcce20d8a0>
+2026-07-19 01:48:58,678 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-19 01:48:58,678 [INFO] ✅ Status updated to DB.
+2026-07-19 01:58:25,836 [INFO] db_conn:<sqlite3.Connection object at 0x7f07ec1c58a0>
+2026-07-19 02:04:19,371 [INFO] db_conn:<sqlite3.Connection object at 0x7382cc45d8a0>
+2026-07-19 02:04:25,504 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-19 02:04:25,504 [INFO] ✅ Status updated to DB.
+2026-07-19 02:11:01,710 [INFO] db_conn:<sqlite3.Connection object at 0x7d0850a658a0>
+2026-07-19 02:11:11,679 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-19 02:11:11,679 [INFO] ✅ Status updated to DB.
+2026-07-19 02:21:05,084 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-19 02:21:05,085 [INFO] ✅ Status updated to DB.
+2026-07-19 10:14:18,468 [INFO] db_conn:<sqlite3.Connection object at 0x76b15044d8a0>
+2026-07-19 10:16:05,488 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-19 10:16:05,489 [INFO] ✅ Status updated to DB.
+2026-07-19 10:20:07,172 [INFO] db_conn:<sqlite3.Connection object at 0x72b14c8a8400>
+2026-07-19 10:20:12,891 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-19 10:20:12,892 [INFO] ✅ Status updated to DB.
+2026-07-19 10:33:45,134 [INFO] db_conn:<sqlite3.Connection object at 0x746e544f0400>
+2026-07-19 10:34:06,462 [INFO] is_feedback : None
+2026-07-19 10:34:06,474 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-19 10:34:06,475 [INFO] ✅ Status updated to DB.
+2026-07-19 10:37:10,444 [INFO] db_conn:<sqlite3.Connection object at 0x7db84c0458a0>
+2026-07-19 10:37:18,272 [INFO] is_feedback : None
+2026-07-19 10:37:18,288 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-19 10:37:18,288 [INFO] ✅ Status updated to DB.
+2026-07-19 10:54:35,552 [INFO] db_conn:<sqlite3.Connection object at 0x78c1e4d758a0>
+2026-07-19 10:54:39,153 [INFO] is_feedback : None
+2026-07-19 10:58:57,082 [INFO] db_conn:<sqlite3.Connection object at 0x751c648d58a0>
+2026-07-19 11:00:40,881 [INFO] is_feedback : None
+2026-07-19 11:00:41,068 [DEBUG] Starting new HTTP connection (1): localhost:11434
+2026-07-19 11:02:23,861 [DEBUG] http://localhost:11434 "POST /api/generate HTTP/1.1" 200 933
+2026-07-19 11:02:23,884 [ERROR] ⏳ idx: 0
+2026-07-19 11:02:23,887 [INFO] is_feedback : True
+2026-07-19 11:02:23,912 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-19 11:02:23,912 [INFO] ✅ Status updated to DB.
+2026-07-19 12:41:15,182 [INFO] db_conn:<sqlite3.Connection object at 0x7f503e5758a0>
+2026-07-19 12:41:20,850 [INFO] is_feedback : None
+2026-07-19 12:41:21,043 [DEBUG] Starting new HTTP connection (1): localhost:11434
+2026-07-19 12:42:21,139 [DEBUG] http://localhost:11434 "POST /api/generate HTTP/1.1" 200 992
+2026-07-19 12:42:21,145 [ERROR] ⏳ idx: 0
+2026-07-19 12:42:21,147 [INFO] is_feedback : True
+2026-07-19 12:42:21,161 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-19 12:42:21,161 [INFO] ✅ Status updated to DB.
+2026-07-19 12:50:39,774 [INFO] is_feedback : None
+2026-07-19 12:50:39,779 [DEBUG] Starting new HTTP connection (1): localhost:11434
+2026-07-19 12:51:09,808 [DEBUG] http://localhost:11434 "POST /api/generate HTTP/1.1" 200 1002
+2026-07-19 12:51:09,817 [ERROR] ⏳ idx: 0
+2026-07-19 12:51:09,818 [INFO] is_feedback : True
+2026-07-19 12:51:09,829 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-19 12:51:09,830 [INFO] ✅ Status updated to DB.
+2026-07-19 12:51:30,153 [INFO] is_feedback : None
+2026-07-19 12:51:30,158 [DEBUG] Starting new HTTP connection (1): localhost:11434
+2026-07-19 12:51:50,470 [DEBUG] http://localhost:11434 "POST /api/generate HTTP/1.1" 200 1000
+2026-07-19 12:51:50,477 [ERROR] ⏳ idx: 0
+2026-07-19 12:51:50,478 [INFO] is_feedback : True
+2026-07-19 12:51:50,490 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-19 12:51:50,490 [INFO] ✅ Status updated to DB.
+2026-07-19 18:28:25,581 [INFO] db_conn:<sqlite3.Connection object at 0x7463583ed8a0>

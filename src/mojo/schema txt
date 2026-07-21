@@ -1,0 +1,30 @@
+sqlite3 javid_memory.db "PRAGMA table_info(javid_memories);"
+sqlite3 javid_memory.db ".schema javid_memories"
+sqlite3 javid_memory.db ".tables.javid_memories"
+sqlite3 javid_memory.db ".tables"
+sqlite3 javid_memory.db "ALTER TABLE javid_logs ADD COLUMN estimate_time INTEGER DEFAULT 0;"
+sqlite3 javid_memory.db "SELECT * FROM javid_logs ORDER BY id DESC LIMIT 10;"
+sqlite3 javid_memory.db "SELECT * FROM javid_memories ORDER BY id DESC LIMIT 10;"
+sqlite3 javid_memory.db "delete FROM javid_logs;"
+
+sqlite3 /mnt/javid_data/projects/javid_ai/javid_memory.db "INSERT INTO javid_logs (command, status, response, estimate_time) VALUES ('ทดสอบระบบ', 'PENDING', 'เริ่มการทำงาน', 0);"
+
+
+curl -X POST http://localhost:8001/ingest/memory \
+     -H "Content-Type: application/json" \
+     -d '{
+        "topic": "Test Setup",
+        "content": "Testing Mojo Python Integration",
+        "category_id": 1,
+        "priority": 1,
+        "metadata": {"user": "Jakchai"}
+     }'
+
+curl -X POST http://localhost:8001/ingest/memory \
+     -H "Content-Type: application/json" \
+     -d '{"topic": "Test", "content": "วิเคราะห์งานให้หน่อย", "category_id": 1, "priority": 1, "metadata": {}}'   
+
+cd /mnt/javid_data/projects/javid_ai/src/mojo/mojoworker/
+pixi run python ../../python/test_zmq_client.py     
+pixi run python /mnt/javid_data/projects/javid_ai/src/python/test_zmq_client.py
+

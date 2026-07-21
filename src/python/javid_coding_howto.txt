@@ -50,6 +50,7 @@ sudo apt install -y build-essential git mesa-utils clinfo
 Step 1: ติดตั้ง Docker (ห้องแล็บหลัก)
 เราต้องมี Docker ก่อนเพื่อใช้ทดสอบ C Code ตามกลยุทธ์ของกัปตันครับ
 
+
 Bash
 sudo apt install -y docker.io
 sudo systemctl enable --now docker
@@ -132,3 +133,11 @@ export HSA_OVERRIDE_GFX_VERSION=8.0.3
 
 # 3. รันใหม่แบบโชว์ Log (Terminal นี้จะค้างไว้ ดูว่ามันโหลด GPU ไหม)
 ollama serve
+
+
+
+
+github
+=======
+username : jtdevelop777
+password : bvnEAay7
