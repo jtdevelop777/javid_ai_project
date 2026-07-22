@@ -1,5 +1,5 @@
 from std.python import Python, PythonObject
-from javid_logger import JavidLogger
+from core.javid_logger import JavidLogger
 
 
 struct CommandRepository:

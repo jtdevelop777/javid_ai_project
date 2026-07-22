@@ -1,13 +1,14 @@
 from std.python import Python, PythonObject
-from taskModel import TaskModel
-import services
-import database
-from models.pojo_ai_commands import PojoAiCommands
+from core.taskModel import TaskModel
+from core.services import ask_ollama_cli
+from core.database import log_to_sqlite, get_recent_logs_as_context
 from repo.ai_commands_repo import CommandRepository
 from models.memory_model import MemoryModel
 from repo.memory_repo import MemoryRepository
-from javid_logger import JavidLogger
+from core.javid_logger import JavidLogger
 from serv.retriever_serv import get_relevant_context
+from models.pojo_ai_commands import PojoAiCommands
+from repo.ai_commands_repo import CommandRepository
 
 
 # สร้างโครงสร้างข้อมูลมาเก็บ Logger ไว้
@@ -21,7 +22,7 @@ struct AppContext:
 # 2. Safety Function (Changed to 'def' for stable Python Interop handling)
 def execute_command(repo: CommandRepository, model: PojoAiCommands) raises:
     var ctx = AppContext()
-    var real_id = database.log_to_sqlite(model.script_content, "PENDING", "", 0)
+    var real_id = log_to_sqlite(model.script_content, "PENDING", "", 0)
     print("⚡ [Javid Core] Bypassing GUI Automation. Command ID: ", model.id)
     # สั่งอัปเดตสถานะเพียงคำสั่งเดียว จบในบรรทัดเดียว
     repo.update_status(real_id, "success")
@@ -40,7 +41,7 @@ def process_command(user_input: String) raises:
             final_prompt = "Context: " + context_str + "\nQuery: " + user_input
 
         # เรียกตัวจริงที่นี่เท่านั้น
-        _ = services.ask_ollama(final_prompt)
+        _ = ask_ollama_cli(final_prompt)
 
     except e:
         ctx.logger_AI.info("Error ในการเรียก LLM: " + String(e))
@@ -66,16 +67,35 @@ def main() raises:
     var threading = Python.import_module("threading")
 
     # Python bridge string definition for FastAPI & ZeroMQ infrastructure
-    var bridge_code = """
+    comptime bridge_code = """
 from fastapi import FastAPI, WebSocket
 import uvicorn
 import zmq
 import json
+import threading
 from pydantic import BaseModel
 from typing import Dict, Any
 
 app = FastAPI(title="Javid MQ System API", version="1.0.0")
 
+_queue_size = 0
+_queue_lock = threading.Lock()
+
+def increment_queue():
+    global _queue_size
+    with _queue_lock:
+        _queue_size += 1
+
+def decrement_queue():
+    global _queue_size
+    with _queue_lock:
+        if _queue_size > 0:
+            _queue_size -= 1
+
+def get_queue_size():
+    global _queue_size
+    with _queue_lock:
+        return _queue_size
 
 class TaskSchema(BaseModel):
     command: str
@@ -91,22 +111,36 @@ class MemorySchema(BaseModel):
     priority: int
     metadata: Dict[str, Any]
 
+@app.get("/queue/status")
+def get_queue_status():
+    count = get_queue_size()
+    return {
+        "status": "success",
+        "queue_position": count,
+        "estimated_wait_seconds": count * 2,
+        "message": f"There are {count} tasks waiting in the queue."
+    }
+
 @app.post("/ingest/memory")
 def ingest_memory(data: MemorySchema):
-    context = zmq.Context()
-    sender = context.socket(zmq.PUSH)
-    sender.connect("tcp://localhost:5555")
-    
-    msg_dict = {
-        "action": "SAVE_MEMORY", 
-        "topic": data.topic,
-        "content": data.content,
-        "category_id": data.category_id,
-        "priority": data.priority,
-        "metadata": data.metadata
-    }
-    sender.send_string(json.dumps(msg_dict, ensure_ascii=False))
-    return {"status": "Memory Ingested into Queue"}
+    try:
+        context = zmq.Context()
+        sender = context.socket(zmq.PUSH)
+        sender.connect("tcp://192.168.4.9:5555")
+        
+        msg_dict = {
+            "action": "SAVE_MEMORY",
+            "topic": data.topic,
+            "content": data.content,
+            "category_id": data.category_id,
+            "priority": data.priority,
+            "metadata": data.metadata
+        }
+        sender.send_string(json.dumps(msg_dict, ensure_ascii=False))
+        increment_queue()
+        return {"status": "queued", "message": "Memory ingested into ZMQ queue successfully."}
+    except Exception as e:
+        print(f"Error Detail: {e}")    
 
 @app.post("/task")
 def submit_task(data: TaskSchema):
@@ -115,7 +149,7 @@ def submit_task(data: TaskSchema):
     
     context = zmq.Context()
     sender = context.socket(zmq.PUSH)
-    sender.connect("tcp://localhost:5555")
+    sender.connect("tcp://192.168.4.9:5555")
     
     msg_dict = {
         "auth_key": "ag_secure_local_token_2026",
@@ -124,15 +158,17 @@ def submit_task(data: TaskSchema):
     }
     
     sender.send_string(json.dumps(msg_dict, ensure_ascii=False))
+    increment_queue()
     return '{"status": "Success"}'
 
 @app.post("/ingest")
 def direct_ingest(data: IngestSchema):
     context = zmq.Context()
     sender = context.socket(zmq.PUSH)
-    sender.connect("tcp://localhost:5555")
+    sender.connect("tcp://192.168.4.9:5555")
     msg_dict = {"action": data.action, "payload": data.payload}
     sender.send_string(f"BYPASS_LOG:{json.dumps(msg_dict, ensure_ascii=False)}")
+    increment_queue()
     return {"status": "Accepted", "mode": "FastTrack"}   
 
 @app.websocket("/ws/sdr")
@@ -145,6 +181,7 @@ async def sdr_stream(websocket: WebSocket):
 def start_api(port):
     uvicorn.run(app, host="0.0.0.0", port=port)
 """
+
 
     var scope = Python.dict()
     _ = py.exec(bridge_code, scope)
@@ -180,16 +217,17 @@ def start_api(port):
 
     var LOCAL_AUTH_KEY = String("ag_secure_local_token_2026")
 
+    var decrement_queue = scope["decrement_queue"]
+
+    # ภายในลูปประมวลผล
     while True:
-        # 1. ประกาศตัวแปรไว้เหนือ try ให้ Scope มันครอบคลุมทั้ง Loop
-        # var parsed_json: PythonObject = Python.none()
-        # 💡 แปลงร่างผลลัพธ์จาก Python Object เป็น String ของ Mojo ตรง ๆ ตั้งแต่จังหวะรับงาน
         try:
             raw_msg = String(receiver.recv_string())
             parsed_json = json_mod.loads(raw_msg)
+            _ = decrement_queue()
         except e:
             print("❌ JSON Parse Error, skipping:", e)
-            continue  # ถ้าแกะ JSON ไม่ได้ ให้ข้ามไปเริ่ม Loop ใหม่ ไม่ต้อง Crash
+            continue  # ถ้าแกะ JSON ไม่ได้ ให้ข้ามไปเริ่ม Loop ใหม่
 
         # 🛡️ ป้องกันกับดัก Truthiness: แปลงและตรวจสอบค่าผ่านกลไกที่ปลอดภัย
         var feedback_val = parsed_json.get("is_feedback")
@@ -205,10 +243,8 @@ def start_api(port):
             var cmd_str = String(parsed_json["command"])
             var cmd_model = PojoAiCommands(0, "Auto", cmd_str, "pending", 0)
 
-            # ทำงานให้เสร็จ
             execute_command(_repo, cmd_model)
 
-            # ส่งสัญญาณตอบกลับหน้าบ้านก่อนออก Loop รอบนี้เพื่อไม่ให้ระบบค้าง
             var response_json = String(
                 '{"status": "success", "message": "Feedback command executed"}'
             )
@@ -216,7 +252,7 @@ def start_api(port):
             continue
 
         else:
-            # 2. เช็ค Memory Action โดยแปลง PythonObject เป็น String ของ Mojo ก่อนนำไปเปรียบเทียบค่า
+            # 2. เช็ค Memory Action
             var is_memory_action = False
             try:
                 var action_obj = parsed_json.get("action")
@@ -228,7 +264,7 @@ def start_api(port):
             except:
                 pass
 
-            # --- Route 1: Javid AI Memory Core Ingestion ---
+            # --- Route 1: Javid AI Memory Core Ingestion (พร้อมเชื่อม AI ตอบกลับ) ---
             if is_memory_action:
                 print("💾 [Javid Core] Memory Ingestion Detected. Processing...")
                 try:
@@ -240,11 +276,42 @@ def start_api(port):
                         parsed_json["metadata"],
                     )
 
+                    # 1. บันทึกความจำลงตาราง javid_memories ตามปกติ
                     mem_repo.save(memory_data)
+
+                    # 2. ส่งบริบทให้ Ollama ประมวลผลเบื้องหลัง
+                    var memory_context_msg = (
+                        "System Note: New memory saved regarding '"
+                        + memory_data.topic
+                        + "'. Content: "
+                        + memory_data.content
+                    )
+                    var ai_response = ask_ollama_cli(memory_context_msg)
+
+                    # 3. บันทึกผลลัพธ์การวิเคราะห์ของ AI ลงฐานข้อมูล (javid_logs) ควบคู่กันไป เพื่อให้เรียกดูย้อนหลังได้
+                    var log_status = String("COMPLETED")
+                    var estimate_val = 10
+                    _ = log_to_sqlite(
+                        "Memory Ingestion: " + memory_data.topic,
+                        log_status,
+                        ai_response,
+                        estimate_val,
+                    )
+
+                    # 4. ส่งสถานะตอบกลับสลับเข้าคิว ZMQ ว่างานเสร็จสิ้นแล้ว (ไม่บล็อกหน้าบ้าน)
+                    var resp_dict = Python.dict()
+                    resp_dict["status"] = "success"
+                    resp_dict["message"] = (
+                        "Memory saved and processed successfully by"
+                        " background AI."
+                    )
+
                     publisher.send_string(
-                        String(
-                            '{"status": "success", "message": "Memory saved"}'
-                        )
+                        json_mod.dumps(resp_dict, ensure_ascii=False)
+                    )
+                    print(
+                        "💾 [Javid Core] Memory stored, AI analyzed, and logged"
+                        " to DB successfully."
                     )
                 except e:
                     print(
@@ -255,11 +322,10 @@ def start_api(port):
                         e,
                     )
 
-            # --- Route 2: Standard Task Pipeline (จัดย่อหน้าให้ตรงกับ if ด้านบนแล้ว) ---
+            # --- Route 2: Standard Task Pipeline ---
             else:
                 var raw_str = String(raw_msg)
 
-                # 💡 แก้ไขจุดนี้: ดึง auth_key จากโครงสร้าง JSON มาตรวจสอบอย่างถูกต้อง
                 var auth_pass = False
                 try:
                     var incoming_key = parsed_json.get("auth_key")
@@ -281,20 +347,17 @@ def start_api(port):
                     )
                     continue
 
-                # เริ่มต้นแกะคำสั่งเข้าสู่ Task Model อย่างปลอดภัย
                 var task = TaskModel(raw_str)
-
-                # ✨ ถ้าคีย์ผ่านแล้ว ค่อยปล่อยให้ไหลลงมาพ่นสัญญาณออกท่อ ZMQ
                 publisher.send_string(task.to_json("estimation"))
                 print("⏳ Task Received: " + task.command)
 
-                # --- CASE 1: พักผ่อน (Shutdown API & Clean Exit) ---
+                # --- CASE 1: พักผ่อน ---
                 if "พักผ่อน" in task.command:
                     task.response = (
                         "Summary: Successfully refactored authentication guard"
                         " and local data pipelines."
                     )
-                    var _real_id = database.log_to_sqlite(
+                    var _real_id = log_to_sqlite(
                         task.command, "COMPLETED", task.response, 0
                     )
                     publisher.send_string(task.to_json("answer"))
@@ -315,20 +378,15 @@ def start_api(port):
                     )
                     break
 
-                # --- CASE 3: การสนทนาทั่วไป (Hybrid Mode + Multi-Agent String Parser!) ---
+                # --- CASE 3: การสนทนาทั่วไป (Hybrid Mode) ---
                 else:
                     try:
                         print(
                             "🧠 [Agent 2 - อ.เจมส์] Thinking & Analyzing with"
                             " Hybrid Context..."
                         )
+                        var local_context = get_recent_logs_as_context(3)
 
-                        # 1. ดึงคลังล็อกอดีต 3 อันล่าสุดมาหนุนหลัง
-                        var local_context = database.get_recent_logs_as_context(
-                            3
-                        )
-
-                        # 2. หลอมรวมกฎกติกา
                         var agent_instruction = String(
                             "You are A. James, a Senior AI Partner. If the user"
                             " wants a command executed, embed"
@@ -343,16 +401,13 @@ def start_api(port):
                             + task.command
                         )
 
-                        # 3. ยิงไปหา Local LLM
-                        var ai_response = services.ask_ollama(hybrid_prompt)
+                        var ai_response = ask_ollama_cli(hybrid_prompt)
                         task.response = ai_response
 
-                        # 4. บันทึกประวัติลงคลัง SQLite ป้องกัน SQL Injection 100%
-                        var _real_id = database.log_to_sqlite(
+                        var _real_id = log_to_sqlite(
                             task.command, "COMPLETED", task.response, 10
                         )
 
-                        # 💡 [Parser Mode] ค้นหาตำแหน่ง 'run_cmd:'
                         var trigger = String("run_cmd:")
                         var builtins = Python.import_module("builtins")
                         var py_response = builtins.str(ai_response)
@@ -392,7 +447,9 @@ def start_api(port):
                                 var internal_sender = zmq.Context().socket(
                                     zmq.PUSH
                                 )
-                                internal_sender.connect("tcp://localhost:5555")
+                                internal_sender.connect(
+                                    "tcp://192.168.4.9:5555"
+                                )
                                 internal_sender.send_string(
                                     json_mod.dumps(
                                         next_action, ensure_ascii=False
@@ -403,6 +460,5 @@ def start_api(port):
                     except e:
                         print("🔴 [Agent Error]:", e)
 
-                    # 6. พ่นกระจายสัญญาณออกหน้าบ้าน (อยู่นอก try แล้ว)
                     publisher.send_string(task.to_json("answer"))
                     print("💾 [Javid Core] Multi-agent processing complete.")

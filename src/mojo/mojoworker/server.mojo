@@ -65,13 +65,37 @@ def main() raises:
             print("✨ ภารกิจสำเร็จ บันทึก Know-how เรียบร้อย")
 
 
+def ask_ollama_cli(prompt: String) -> String:
+    try:
+        var subprocess = Python.import_module("subprocess")
+
+        # สร้าง Python List แทน List ของ Mojo เพื่อให้ส่งเข้า subprocess ได้ถูกต้อง
+        var cmd = Python.list()
+        cmd.append("ollama")
+        cmd.append("run")
+        cmd.append("qwen2")
+        cmd.append(prompt)
+
+        var result = subprocess.run(
+            cmd, capture_output=True, text=True, encoding="utf-8", timeout=60
+        )
+
+        if result.returncode == 0:
+            return String(String(result.stdout).strip())
+        else:
+            return "CLI Error: " + String(String(result.stderr).strip())
+
+    except e:
+        return "Execution Error: " + String(e)
+
+
 # --- ฟังก์ชันช่วย (Helpers) ---
 
 
 def ask_ollama(prompt: String) -> String:
     try:
         var requests = Python.import_module("requests")
-        var url = "http://localhost:11434/api/generate"
+        var url = "http://192.168.4.9:11434/api/generate"
         var payload = Python.dict()
         # payload["model"] = "llama3"
         # payload["model"] = "qwen2"
@@ -80,7 +104,7 @@ def ask_ollama(prompt: String) -> String:
         payload["prompt"] = prompt
         payload["stream"] = False
 
-        var response = requests.post(url, json=payload)
+        var response = requests.post(url, json=payload, timeout=10)
         var res_json = response.json()
         var text = String(res_json["response"])
         print("DEBUG: AI ตอบว่า ->", text)  # <--- เพิ่มบรรทัดนี้ครับ
@@ -92,7 +116,9 @@ def ask_ollama(prompt: String) -> String:
 def log_to_sqlite(cmd: String, status: String, response: String):
     try:
         var sqlite3 = Python.import_module("sqlite3")
-        var conn = sqlite3.connect("javid_memory.db")
+        var conn = sqlite3.connect(
+            "/mnt/javid_data/projects/javid_ai/javid_memory.db"
+        )
         var cursor = conn.cursor()
 
         # สร้าง Table ถ้ายังไม่มี

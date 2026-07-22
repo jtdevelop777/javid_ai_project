@@ -1,0 +1,28 @@
+2026-07-23 01:15:58,392 [INFO] db_conn:<sqlite3.Connection object at 0x7a0255f91b40>
+2026-07-23 01:17:07,793 [INFO] is_feedback : None
+2026-07-23 01:22:04,854 [ERROR] ⏳ idx: 606
+2026-07-23 01:22:04,855 [INFO] is_feedback : None
+2026-07-23 01:24:06,261 [INFO] is_feedback : None
+2026-07-23 01:27:19,598 [INFO] is_feedback : True
+2026-07-23 01:27:19,610 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-23 01:27:19,610 [INFO] Error ในการเรียก LLM: 
+2026-07-23 01:27:35,777 [INFO] is_feedback : None
+2026-07-23 01:29:38,195 [INFO] is_feedback : None
+2026-07-23 01:41:14,162 [INFO] db_conn:<sqlite3.Connection object at 0x791f63d99b40>
+2026-07-23 01:41:51,809 [INFO] is_feedback : None
+2026-07-23 02:08:45,834 [INFO] db_conn:<sqlite3.Connection object at 0x72502caa1b40>
+2026-07-23 02:13:51,556 [INFO] db_conn:<sqlite3.Connection object at 0x766870b91b40>
+2026-07-23 02:14:04,294 [INFO] is_feedback : None
+2026-07-23 02:17:35,550 [INFO] is_feedback : None
+2026-07-23 02:26:53,249 [INFO] is_feedback : None
+2026-07-23 02:28:58,352 [ERROR] ⏳ idx: 260
+2026-07-23 02:28:58,353 [INFO] is_feedback : None
+2026-07-23 02:30:58,853 [ERROR] ⏳ idx: 238
+2026-07-23 02:30:58,854 [INFO] is_feedback : True
+2026-07-23 02:30:58,892 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-23 02:30:58,893 [INFO] Error ในการเรียก LLM: 
+2026-07-23 02:30:58,893 [INFO] is_feedback : True
+2026-07-23 02:30:58,908 [INFO] 📊 SQL Update Result -> Affected Rows: 1
+2026-07-23 02:30:58,909 [INFO] Error ในการเรียก LLM: 
+2026-07-23 02:43:14,403 [INFO] db_conn:<sqlite3.Connection object at 0x7c40ca2a9b40>
+2026-07-23 02:43:33,413 [INFO] is_feedback : None

@@ -10,7 +10,15 @@ struct MemoryRepository:
 
     def save(self, model: MemoryModel):
         try:
-            var cursor = self.db_connection.cursor()
+            var sqlite3 = Python.import_module("sqlite3")
+            var builtins = Python.import_module("builtins")
+
+            # 💡 ใช้ Direct Connection ไปที่ไฟล์ DB จริงแบบเดียวกับ log_to_sqlite 100%
+            var conn = sqlite3.connect(
+                "/mnt/javid_data/projects/javid_ai/javid_memory.db"
+            )
+            var cursor = conn.cursor()
+
             var query = String(
                 "INSERT INTO javid_memories (topic, content, category_id,"
                 " priority, metadata) VALUES (?, ?, ?, ?, ?)"
@@ -27,8 +35,13 @@ struct MemoryRepository:
             py_args.append(p_metadata_str)
 
             cursor.execute(query, py_args)
-            self.db_connection.commit()
+            conn.commit()  # Commit ที่ Connection ตรงนี้เลย
             cursor.close()
-            print("💾 [Javid Core] Memory topic registered successfully!")
+            conn.close()
+
+            print(
+                "💾 [Javid Core] Memory topic registered & committed directly"
+                " successfully!"
+            )
         except e:
             print("🔴 [Javid Core] Failed to save memory record:", e)
