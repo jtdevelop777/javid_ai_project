@@ -4,8 +4,10 @@ from std.python import Python, PythonObject
 # เติม raises เข้าไปเพื่อให้ Compiler รู้ว่าฟังก์ชันนี้มีโอกาสเกิด Exception
 def get_relevant_context(query: String) raises -> PythonObject:
     try:
-        var sqlite = Python.import_module("sqlite3")
-        var conn = sqlite.connect("javid_data.db")
+        var sqlite3 = Python.import_module("sqlite3")
+        var conn = sqlite3.connect(
+            "/mnt/javid_data/projects/javid_ai/javid_memory.db"
+        )
         var cursor = conn.cursor()
 
         var params = Python.evaluate("('" + "%" + query + "%" + "',)")

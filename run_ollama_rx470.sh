@@ -2,6 +2,9 @@
 
 # https://gemini.google.com/share/c87eba65d419
 
+# --- ตั้งค่าการเชื่อมต่อ ---
+export OLLAMA_HOST=0.0.0.0
+
 # --- การตั้งค่าสำหรับ GPU AMD RX 470 ---
 export HSA_OVERRIDE_GFX_VERSION=8.0.3
 export OLLAMA_VULKAN=1

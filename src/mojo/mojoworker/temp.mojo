@@ -25,7 +25,7 @@ def main() raises:
         # ตรงนี้คือจุดที่ FastAPI จะส่งงานเข้า ZMQ PULL ของเราเอง
         var ctx = Python.import_module("zmq").Context()
         var sender = ctx.socket(Python.import_module("zmq").PUSH)
-        sender.connect("tcp://localhost:5555")
+        sender.connect("tcp://192.168.4.9:5555")
         sender.send_string(cmd)
         return Python.dict(status="Success", msg="Task sent to Mojo Queue")
 

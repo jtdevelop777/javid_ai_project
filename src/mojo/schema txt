@@ -28,3 +28,8 @@ cd /mnt/javid_data/projects/javid_ai/src/mojo/mojoworker/
 pixi run python ../../python/test_zmq_client.py     
 pixi run python /mnt/javid_data/projects/javid_ai/src/python/test_zmq_client.py
 
+show cpu & gpu
+=============
+htop
+radeontop
+
