@@ -2,3 +2,8 @@
 /src/java/javadworker/javidNetworkWorker/target/
 *.db
 .vscode/
+javid_core_2026-07-23.log
+src/python/javid_coding_howto.txt
+*.log
+# ละเว้นโฟลเดอร์ .git ย่อยที่ซ้อนอยู่
+src/python/backend/.git/

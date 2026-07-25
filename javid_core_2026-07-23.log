@@ -26,3 +26,4 @@
 2026-07-23 02:30:58,909 [INFO] Error ในการเรียก LLM: 
 2026-07-23 02:43:14,403 [INFO] db_conn:<sqlite3.Connection object at 0x7c40ca2a9b40>
 2026-07-23 02:43:33,413 [INFO] is_feedback : None
+2026-07-23 02:59:34,608 [INFO] is_feedback : None
