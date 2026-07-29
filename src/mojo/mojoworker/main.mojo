@@ -11,6 +11,7 @@ from models.pojo_ai_commands import PojoAiCommands
 from repo.ai_commands_repo import CommandRepository
 
 
+
 # สร้างโครงสร้างข้อมูลมาเก็บ Logger ไว้
 struct AppContext:
     var logger_AI: JavidLogger
@@ -66,139 +67,21 @@ def main() raises:
     var zmq = Python.import_module("zmq")
     var threading = Python.import_module("threading")
 
-    # Python bridge string definition for FastAPI & ZeroMQ infrastructure
-    comptime bridge_code = """
-from fastapi import FastAPI, WebSocket
-import uvicorn
-import zmq
-import json
-import threading
-from pydantic import BaseModel
-from typing import Dict, Any
+    # 1. ประกาศตัวแปรเตรียมไว้ข้างนอก
+    #var start_api = PythonObject()
+    var decrement_queue = PythonObject()
 
-app = FastAPI(title="Javid MQ System API", version="1.0.0")
+    #print(sys.prefix)
+    # Import the Python sys module
 
-_queue_size = 0
-_queue_lock = threading.Lock()
-
-def increment_queue():
-    global _queue_size
-    with _queue_lock:
-        _queue_size += 1
-
-def decrement_queue():
-    global _queue_size
-    with _queue_lock:
-        if _queue_size > 0:
-            _queue_size -= 1
-
-def get_queue_size():
-    global _queue_size
-    with _queue_lock:
-        return _queue_size
-
-class TaskSchema(BaseModel):
-    command: str
-
-class IngestSchema(BaseModel):
-    action: str
-    payload: Dict[str, Any]
-
-class MemorySchema(BaseModel):
-    topic: str
-    content: str
-    category_id: int
-    priority: int
-    metadata: Dict[str, Any]
-
-@app.get("/queue/status")
-def get_queue_status():
-    count = get_queue_size()
-    return {
-        "status": "success",
-        "queue_position": count,
-        "estimated_wait_seconds": count * 2,
-        "message": f"There are {count} tasks waiting in the queue."
-    }
-
-@app.post("/ingest/memory")
-def ingest_memory(data: MemorySchema):
-    try:
-        context = zmq.Context()
-        sender = context.socket(zmq.PUSH)
-        sender.connect("tcp://192.168.4.9:5555")
-        
-        msg_dict = {
-            "action": "SAVE_MEMORY",
-            "topic": data.topic,
-            "content": data.content,
-            "category_id": data.category_id,
-            "priority": data.priority,
-            "metadata": data.metadata
-        }
-        sender.send_string(json.dumps(msg_dict, ensure_ascii=False))
-        increment_queue()
-        return {"status": "queued", "message": "Memory ingested into ZMQ queue successfully."}
-    except Exception as e:
-        print(f"Error Detail: {e}")    
-
-@app.post("/task")
-def submit_task(data: TaskSchema):
-    import zmq
-    import json
-    
-    context = zmq.Context()
-    sender = context.socket(zmq.PUSH)
-    sender.connect("tcp://192.168.4.9:5555")
-    
-    msg_dict = {
-        "auth_key": "ag_secure_local_token_2026",
-        "target_version": "1.0.0",
-        "command": str(data.command)
-    }
-    
-    sender.send_string(json.dumps(msg_dict, ensure_ascii=False))
-    increment_queue()
-    return '{"status": "Success"}'
-
-@app.post("/ingest")
-def direct_ingest(data: IngestSchema):
-    context = zmq.Context()
-    sender = context.socket(zmq.PUSH)
-    sender.connect("tcp://192.168.4.9:5555")
-    msg_dict = {"action": data.action, "payload": data.payload}
-    sender.send_string(f"BYPASS_LOG:{json.dumps(msg_dict, ensure_ascii=False)}")
-    increment_queue()
-    return {"status": "Accepted", "mode": "FastTrack"}   
-
-@app.websocket("/ws/sdr")
-async def sdr_stream(websocket: WebSocket):
-    await websocket.accept()
-    while True:
-        data = await websocket.receive_bytes()
-        pass
-
-def start_api(port):
-    uvicorn.run(app, host="0.0.0.0", port=port)
-"""
-
-
-    var scope = Python.dict()
-    _ = py.exec(bridge_code, scope)
-    var start_api = scope["start_api"]
-
-    var thread_kwargs = Python.dict()
-    thread_kwargs["port"] = 8001
-
-    var server_thread = threading.Thread(target=start_api, kwargs=thread_kwargs)
-    server_thread.setDaemon(True)
-    server_thread.start()
 
     var context = zmq.Context()
     var receiver = context.socket(zmq.PULL)
     receiver.bind("tcp://*:5555")
+
     var publisher = context.socket(zmq.PUB)
-    publisher.bind("tcp://*:8002")
+    publisher.setsockopt(zmq.LINGER, 0) # <-- ใส่บรรทัดนี้เพื่อไม่ให้ publisher ดึงลูปค้าง
+    publisher.bind("tcp://*:8002")    
 
     var default_script = String("")
     var _ = PojoAiCommands(0, "Default", default_script, "pending", 0)
@@ -209,20 +92,58 @@ def start_api(port):
 
     # 💡 ใช้ Absolute Path เพื่อความแม่นยำไม่ว่าจะสั่งรันจากโฟลเดอร์ไหน
     var DB_PATH = "/mnt/javid_data/projects/javid_ai/javid_memory.db"
-    var db_conn = sqlite3.connect(DB_PATH)
-    var _repo = CommandRepository(db_conn)
-    var mem_repo = MemoryRepository(db_conn)
+    var conn = sqlite3.connect(DB_PATH)
+    var _repo = CommandRepository(conn)
+    var mem_repo = MemoryRepository(conn)
+
+    var cursor = conn.cursor()
+
+    # สร้างตาราง log เผื่อไว้กรณีที่ยังไม่มีตาราง
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS system_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            level TEXT,
+            message TEXT,
+            timestamp DATETIME DEFAULT CURRENT_STAMP
+        )
+    """)
+
+    # สั่ง Insert ข้อมูลทดสอบ
+    cursor.execute("INSERT INTO system_logs (level, message) VALUES ('ZMQ_TEST', 'Javid MQ System Started Successfully')")
+    conn.commit()
+    conn.close()
+
+    print("✅ Insert test data into database successfully!")
 
     print("🚀 Javid MQ System: Mojo + Pixi [PORT 8001 ONLINE]")
 
     var LOCAL_AUTH_KEY = String("ag_secure_local_token_2026")
 
-    var decrement_queue = scope["decrement_queue"]
+    # 2. ย้ายมาโหลดและสั่งเปิด API Server ตรงนี้
+    Python.add_to_path("/mnt/javid_data/projects/javid_ai/src/mojo/mojoworker/py2mojo")
+    #print(sys.path[-1])
+    try:
+        var api_module = Python.import_module("api_server")
+        # สั่งรัน API แบบ Threading เพื่อไม่ให้ Block Event Loop หลัก
+        var api_thread = threading.Thread(target=api_module.start_api)
+        api_thread.start()
+        print("✅ Found and loaded api_server.py in Thread!")
+    except e:
+        print("❌ Cannot load api_server:", e)
+        return
+
 
     # ภายในลูปประมวลผล
     while True:
+
         try:
             raw_msg = String(receiver.recv_string())
+            print(raw_msg)
+            
+            # --- แทรกแค่บรรทัดนี้บรรทัดเดียวพอครับ เพื่อตัด BYPASS_LOG: ออกถ้ามี ---
+            #if raw_msg.startswith("BYPASS_LOG:"):
+            raw_msg = raw_msg.replace("BYPASS_LOG:", "")
+
             parsed_json = json_mod.loads(raw_msg)
             _ = decrement_queue()
         except e:
@@ -256,56 +177,77 @@ def start_api(port):
             var is_memory_action = False
             try:
                 var action_obj = parsed_json.get("action")
-                if (
-                    not action_obj is None
-                    and String(action_obj) == "SAVE_MEMORY"
-                ):
+                if String(action_obj) == "SAVE_MEMORY" or String(action_obj) == "store_memory":
                     is_memory_action = True
             except:
                 pass
 
-            # --- Route 1: Javid AI Memory Core Ingestion (พร้อมเชื่อม AI ตอบกลับ) ---
+            # --- Route 1: Javid AI Memory Core Ingestion ---
             if is_memory_action:
-                print("💾 [Javid Core] Memory Ingestion Detected. Processing...")
+                print("🧠 [Javid Core] Save Memory Request Detected. Processing...")
                 try:
+                    # รองรับทั้ง action 'store_memory' และ 'SAVE_MEMORY'
+                    # และรองรับการดึง payload จาก JSON
+                    # 1. ดึงค่าจาก parsed_json และแปลงเป็น Mojo Types ให้ถูกต้อง
+                    var topic = String(parsed_json.get("topic", ""))
+                    var content = String(parsed_json.get("content", ""))
+
+                    # แปลง category_id เป็น Mojo Int ผ่าน String เพื่อความปลอดภัย
+                    var _category_id = 0
+                    try:
+                        category_id = Int(String(parsed_json.get("category_id", 0)))
+                    except:
+                        category_id = 0
+
+                    # แปลง priority เป็น Mojo Int
+                    var _priority = 0
+                    try:
+                        priority = Int(String(parsed_json.get("priority", 0)))
+                    except:
+                        priority = 0
+
+                    # metadata และ assets เป็น PythonObject (dict/list) อยู่แล้ว
+                    var metadata = parsed_json.get("metadata", Python.dict())
+                    var assets = parsed_json.get("assets", Python.list())
+
+                    # 2. สร้าง MemoryModel โดยส่ง Argument ครบทั้ง 6 ตัว
                     var memory_data = MemoryModel(
-                        String(parsed_json["topic"]),
-                        String(parsed_json["content"]),
-                        Int(String(parsed_json["category_id"])),
-                        Int(String(parsed_json["priority"])),
-                        parsed_json["metadata"],
+                        topic,
+                        content,
+                        category_id,
+                        priority,
+                        metadata,
+                        assets
                     )
 
-                    # 1. บันทึกความจำลงตาราง javid_memories ตามปกติ
+                    # 1. บันทึกความจำลง PostgreSQL ผ่าน memory_repo
                     mem_repo.save(memory_data)
 
+                    # --- นำโค้ดเดิมส่วนนี้มาวางต่อตรงนี้ครับ ---
                     # 2. ส่งบริบทให้ Ollama ประมวลผลเบื้องหลัง
                     var memory_context_msg = (
-                        "System Note: New memory saved regarding '"
+                        "System Note: New memory saved regarding "
                         + memory_data.topic
-                        + "'. Content: "
+                        + ". Content: "
                         + memory_data.content
                     )
                     var ai_response = ask_ollama_cli(memory_context_msg)
 
-                    # 3. บันทึกผลลัพธ์การวิเคราะห์ของ AI ลงฐานข้อมูล (javid_logs) ควบคู่กันไป เพื่อให้เรียกดูย้อนหลังได้
+                    # 3. บันทึกผลลัพธ์การวิเคราะห์ของ AI ลงฐานข้อมูล (javid_logs)
                     var log_status = String("COMPLETED")
                     var estimate_val = 10
                     _ = log_to_sqlite(
                         "Memory Ingestion: " + memory_data.topic,
                         log_status,
                         ai_response,
-                        estimate_val,
+                        estimate_val
                     )
 
-                    # 4. ส่งสถานะตอบกลับสลับเข้าคิว ZMQ ว่างานเสร็จสิ้นแล้ว (ไม่บล็อกหน้าบ้าน)
+                    # 4. ส่งสถานะตอบกลับสลับคิว ZMQ ว่างานเสร็จสิ้นแล้ว
                     var resp_dict = Python.dict()
                     resp_dict["status"] = "success"
-                    resp_dict["message"] = (
-                        "Memory saved and processed successfully by"
-                        " background AI."
-                    )
-
+                    resp_dict["message"] = "Memory and assets saved successfully"
+                    
                     publisher.send_string(
                         json_mod.dumps(resp_dict, ensure_ascii=False)
                     )
@@ -325,6 +267,9 @@ def start_api(port):
             # --- Route 2: Standard Task Pipeline ---
             else:
                 var raw_str = String(raw_msg)
+                
+                # ... โค้ดเดิมของจักร์ชัยทั้งหมด ...
+                var task = TaskModel(raw_str)
 
                 var auth_pass = False
                 try:
@@ -347,7 +292,7 @@ def start_api(port):
                     )
                     continue
 
-                var task = TaskModel(raw_str)
+
                 publisher.send_string(task.to_json("estimation"))
                 print("⏳ Task Received: " + task.command)
 

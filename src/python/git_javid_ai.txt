@@ -40,3 +40,96 @@ git commit -m "fix: merge readme and add memory api core [ai_tag : 14042026_1055
 
 # 4. Push ขึ้น GitHub
 git push origin main
+
+
+
+python export pdf
+==================
+du -sh /tmp/chrome_dev_user_data
+du -h --max-depth=2 /tmp/chrome_dev_user_data | sort -hr | head -n 10
+
+google-chrome --remote-debugging-port=9222 --user-data-dir="/tmp/chrome_dev_user_data" &
+
+cp -rf "$HOME/.config/google-chromeฝ /tmp/chrome_dev_user_data/
+
+rm -rf /tmp/chrome_dev_user_data/google-chrome/OptGuideOnDeviceModel
+
+rm -rf /tmp/chrome_dev_user_data/Default/Cache/*
+rm -rf /tmp/chrome_dev_user_data/Default/Code\ Cache/*
+rm -rf /tmp/chrome_dev_user_data/Default/GPUCache/*
+rm -rf /tmp/chrome_dev_user_data/Default/Service\ Worker/CacheStorage/
+rm -rf /tmp/chrome_dev_user_data/Default/IndexedDB/*
+rm -rf /tmp/chrome_dev_user_data/Default/Script\Cache/*
+rm -rf /tmp/chrome_dev_user_data/Default/File\ System/*
+rm -rf /tmp/chrome_dev_user_data/Default/Application\ Cache/*
+rm -rf /tmp/chrome_dev_user_data/System\ Profile/*
+rm -rf /tmp/chrome_dev_user_data/Crashpad/*
+rm -rf /tmp/chrome_dev_user_data/OptGuideOnDeviceModel
+rm -rf /tmp/chrome_dev_user_data/OptGuideOnDeviceClassifierModel
+ลบ Service Worker ใน Profile 1 (ประหยัดเพิ่มอีก 400MB)
+rm -rf "/tmp/chrome_dev_user_data/Profile 1/Service Worker"
+du -sh /tmp/chrome_dev_user_data
+
+
+pkill chrome
+pkill -f chrome
+
+# 1. ปิด Chrome ให้หมดก่อน
+pkill -9 chrome
+
+# 2. ก๊อบปี้ไฟล์เฉพาะตัวตนและการล็อกอินจาก Profile 1 มาใส่ในโฟลเดอร์ /tmp ของเรา
+cp -f "$HOME/.config/google-chrome/Profile 1/Cookies" "/tmp/chrome_dev_user_data/Default/" 2>/dev/null
+cp -f "$HOME/.config/google-chrome/Profile 1/Login Data" "/tmp/chrome_dev_user_data/Default/" 2>/dev/null
+cp -f "$HOME/.config/google-chrome/Profile 1/Preferences" "/tmp/chrome_dev_user_data/Default/" 2>/dev/null
+
+cp -f "$HOME/.config/google-chrome/Profile 1/Cookies" "/tmp/chrome_dev_user_data/Profile 1/" 2>/dev/null
+cp -f "$HOME/.config/google-chrome/Profile 1/Login Data" "/tmp/chrome_dev_user_data/Profile 1/" 2>/dev/null
+cp -f "$HOME/.config/google-chrome/Profile 1/Preferences" "/tmp/chrome_dev_user_data/Profile 1/" 2>/dev/null
+
+
+
+google-chrome --remote-debugging-port=9222 &
+
+google-chrome --remote-debugging-port=9222 --user-data-dir="/tmp/chrome_dev_user_data"
+google-chrome --remote-debugging-port=9222 --user-data-dir="/tmp/chrome_dev_user_data" &
+google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.config/google-chrome" --profile-directory="Default" &
+google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.config/google-chrome" --profile-directory="Profile 1" &
+google-chrome --remote-debugging-port=9222 --profile-directory="*" &
+
+google-chrome --remote-debugging-port=9222 --user-data-dir="/tmp/chrome_dev_user_data" --profile-directory="Profile 1" &
+
+*****
+# 1. ปิด Chrome ให้หมดจด
+pkill -9 chrome
+
+# 2. เคลียร์ของเก่าใน /tmp ให้เกลี้ยงก่อนเริ่มใหม่
+rm -rf /tmp/chrome_dev_user_data
+
+# 3. สร้างโครงสร้างโฟลเดอร์ Profile 1 ใน /tmp ให้ตรงเป๊ะ
+mkdir -p /tmp/chrome_dev_user_data/"Profile 1"
+
+# 4. ก๊อบปี้ไฟล์ข้อมูลสำคัญ (Cookies, Login Data, Preferences และโฟลเดอร์ Network) มาให้ครบ
+cp -rf "$HOME/.config/google-chrome/Profile 1/Cookies" /tmp/chrome_dev_user_data/"Profile 1/" 2>/dev/null
+cp -rf "$HOME/.config/google-chrome/Profile 1/Login Data" /tmp/chrome_dev_user_data/"Profile 1/" 2>/dev/null
+cp -rf "$HOME/.config/google-chrome/Profile 1/Preferences" /tmp/chrome_dev_user_data/"Profile 1/" 2>/dev/null
+cp -rf "$HOME/.config/google-chrome/Profile 1/Network" /tmp/chrome_dev_user_data/"Profile 1/" 2>/dev/null
+cp -rf "$HOME/.config/google-chrome/Local State" /tmp/chrome_dev_user_data/ 2>/dev/null
+cp -f "$HOME/.config/google-chrome/Local State" /tmp/chrome_dev_user_data/ 2>/dev/null
+
+🔍 วิธีที่ 1: ดูจาก URL ของหน้าโปรไฟล์ (เร็วที่สุด)
+ตอนที่กัปตันเปิด Chrome หน้าปกติขึ้นมา:
+
+เปิดแท็บใหม่แล้วพิมพ์ chrome://version แล้วกด Enter
+
+มองหาบรรทัด Profile Path ครับ
+
+ถ้ามันลงท้ายด้วย .../google-chrome/Default แปลว่าเราอยู่ Default
+
+ถ้ามันลงท้ายด้วย .../google-chrome/Profile 1 แปลว่าเราอยู่ Profile 1 (หรือ Profile 2, 3 ตามลำดับ)
+
+
+source venv/bin/activate
+source src/python/venv/bin/activate
+python3 src/python/pdf_exporter/auto_replace_and_export_pdf.py
+
+python3 src/python/pdf_exporter/weasyprint_pdf.py

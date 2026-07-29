@@ -9,11 +9,13 @@ version = "0.1.0"
 
 [dependencies]
 mojo = "==0.26.3.0.dev2026041405"
-pyzmq = ">=27.1.0,<28"
-requests = "==2.33.1"
+pyzmq = "==27.1.0"
+requests = "==2.34.2"
 fastapi = "==0.135.3"
 uvicorn = "==0.44.0"
 pyautogui = "==0.9.54"
+chromadb = "==0.6.3"
+psycopg2 = "==2.9.12"
 
 #mojo = ">=0.26.3.0.dev2026041405,<0.27"
 #pyzmq = ">=27.1.0,<28"
@@ -21,3 +23,6 @@ pyautogui = "==0.9.54"
 #fastapi = ">=0.135.3,<0.136"
 #uvicorn = ">=0.44.0,<0.45"
 #pyautogui = ">=0.9.54,<0.10"
+
+[pypi-dependencies]
+faster-whisper = "*"

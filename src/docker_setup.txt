@@ -15,3 +15,46 @@ passwd : gKIEv624M3wE#
 
 
 http://127.0.0.1:18789/dashboard?token=Jakchai1234
+
+docker-compose.yml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: local_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - /mnt/javid_data/projects/javid_ai/ai_database/postgres_data:/var/lib/postgresql/data
+
+  chromadb:
+    image: chromadb/chroma:0.4.24
+    container_name: local_chromadb
+    restart: always
+    ports:
+      - "8001:8000"
+    volumes:
+      - /mnt/javid_data/projects/javid_ai/ai_database/chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+extractor:
+    build: ./extractor_worker
+    container_name: javid_extractor
+    restart: "no"
+    volumes:
+      - /mnt/javid_data/projects/javid_ai/storage:/app/storage
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      
+      
+docker-compose down
+docker-compose up -d
+
+pixi run mojo test_3db.mojo
+pixi run mojo main.mojo

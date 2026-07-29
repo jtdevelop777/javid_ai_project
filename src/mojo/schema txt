@@ -1,3 +1,8 @@
+cr: ตำรา GoF (Gang of Four) - Design Patterns: Elements of Reusable Object-Oriented Software
+#JTDevelopTech #SoftwareArchitecture #DesignPatterns #CodingLife #AgentLab #Developer #เส้นทางโปรแกรมเมอร์ 
+url: [ใส่ลิงก์บทความ ผลงาน หรือเพจของคุณตรงนี้]  
+
+
 sqlite3 javid_memory.db "PRAGMA table_info(javid_memories);"
 sqlite3 javid_memory.db ".schema javid_memories"
 sqlite3 javid_memory.db ".tables.javid_memories"
@@ -24,12 +29,98 @@ curl -X POST http://localhost:8001/ingest/memory \
      -H "Content-Type: application/json" \
      -d '{"topic": "Test", "content": "วิเคราะห์งานให้หน่อย", "category_id": 1, "priority": 1, "metadata": {}}'   
 
+curl -X 'GET'   'http://localhost:8001/queue/status'   -H 'accept: application/json'
+{"status":"success","queue_position":0,"estimated_wait_seconds":0,"message":"There are 0 tasks waiting in the queue."}
+
+curl -X POST "http://127.0.0.1:8001/ingest" \
+     -H "Content-Type: application/json" \
+     -d '{"action": "TEST", "payload": {"msg": "hello mojo"}}'
+
+
+{
+  "action": "store_memory",
+  "payload": {
+    "topic": "SDR Project - FPGA Development",
+    "content": "เนื้อหา...",
+    "category_id": 1,
+    "priority": 5,
+    "metadata": {
+      "project": "SDR Project",
+      "chapter": "FPGA Development",
+      "source": "gemini"
+    },
+    "assets": [
+      {
+        "type": "image",
+        "filename": "img_0001.png",
+        "path": "sdr/images/img_0001.png",
+        "mime_type": "image/png",
+        "caption": "ภาพผลการทดลอง",
+        "order": 1
+      }
+    ]
+  }
+}
+
+
+sudo netstat -tulpn | grep -E '5555|8001|8002|5432'
+sudo ss -tulpn | grep -E '5555|8001|8002|5432'
+
+docker inspect local_postgres | grep -i POSTGRES
+docker exec -it local_postgres psql -U myuser -d mydatabase -c "SELECT id, topic, content FROM memories ORDER BY id DESC LIMIT 1;"
+
+
 cd /mnt/javid_data/projects/javid_ai/src/mojo/mojoworker/
 pixi run python ../../python/test_zmq_client.py     
 pixi run python /mnt/javid_data/projects/javid_ai/src/python/test_zmq_client.py
+
+pixi run mojo test_3db.mojo
+pixi add chromadb psycopg2 requests
 
 show cpu & gpu
 =============
 htop
 radeontop
+
+# 1. Bind ZMQ Sockets ให้เรียบร้อยก่อน (Port 5555 & 8002 Active ทันที)
+    var context = zmq.Context()
+    var receiver = context.socket(zmq.PULL)
+    receiver.bind("tcp://*:5555")
+    var publisher = context.socket(zmq.PUB)
+    publisher.bind("tcp://*:8002")
+
+    print("📡 ZMQ Receiver Listening on tcp://*:5555")
+    print("📡 ZMQ Publisher Listening on tcp://*:8002")
+
+    # 2. ย้ายมาโหลดและสั่งเปิด API Server ตรงนี้
+    Python.add_to_path("/mnt/javid_data/projects/javid_ai/src/mojo/mojoworker/py2mojo")
+    try:
+        var api_module = Python.import_module("api_server")
+        # สั่งรัน API แบบ Threading เพื่อไม่ให้ Block Event Loop หลัก
+        var api_thread = threading.Thread(target=api_module.start_api)
+        api_thread.start()
+        print("✅ Found and loaded api_server.py in Thread!")
+    except e:
+        print("❌ Cannot load api_server:", e)
+        return
+
+    # 3. เข้าสู่ Worker Loop หลัก
+    while True:
+        try:
+            raw_msg = String(receiver.recv_string())
+            # ... โค้ดเดิมของกัปตันทั้งหมด ...
+
+
+GlowCube
+=========
+source venv/bin/activate   
+pip install pyserial psutil        
+
+lsusb
+dmesg | grep -i tty
+ls -l /dev/ttyUSB* /dev/ttyACM*
+
+ให้สิทธิเข้าถึง อุปกรณ์ usb
+sudo usermod -a -G dialout $USER
+newgrp dialout
 

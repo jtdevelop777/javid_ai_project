@@ -1,0 +1,5 @@
+https://aistudio.google.com/api-keys?project=gen-lang-client-0322157691
+
+api key ; AIzaSyC8dPTXIMRk1KI49mPLhbO66wEmsuVbf1s
+
+flutter run -d linux

@@ -1,0 +1,6 @@
+{
+  "db_host": "localhost",
+  "db_name": "javid_ai_db",
+  "db_user": "myuser",
+  "db_password": "mypassword"
+}
